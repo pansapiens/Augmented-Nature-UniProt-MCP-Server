@@ -357,11 +357,17 @@ Get functional domains and features for human insulin:
 
 ## API Integration
 
-This server integrates with the UniProt REST API (https://rest.uniprot.org). All requests include:
+This server integrates with the UniProt REST API for programmatic access to protein data. For more information about UniProt:
 
-- **User-Agent**: `UniProt-MCP-Server/0.1.0`
+- **UniProt Website**: https://www.uniprot.org/
+- **API Documentation**: https://www.uniprot.org/help/api
+- **REST API Guide**: https://www.uniprot.org/help/api_queries
+
+All API requests include:
+
+- **User-Agent**: `UniProt-MCP-Server/1.0.0`
 - **Timeout**: 30 seconds
-- **Base URL**: `https://rest.uniprot.org`
+- **Base URL**: `https://rest.uniprot.org` (programmatic access only)
 
 ## Error Handling
 
@@ -493,12 +499,3 @@ This comprehensive UniProt MCP Server is developed by **[Augmented Nature](https
 - **Enhanced Docker Support**: Multi-stage builds with security best practices
 - **Comprehensive Documentation**: Complete tool reference and examples
 - **Developed by Augmented Nature**: Professional bioinformatics platform
-
-### v0.1.0 - Initial Release
-
-- Basic protein search functionality
-- Detailed protein information retrieval
-- Gene-based search
-- Sequence retrieval
-- Feature analysis
-- Resource template support
