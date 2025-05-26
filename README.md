@@ -1,3 +1,5 @@
+![UniProt MCP Server Logo](uniprot-mcp-server-logo.png)
+
 # UniProt MCP Server
 
 A comprehensive Model Context Protocol (MCP) server providing advanced access to the UniProt protein database. This server offers 26 specialized bioinformatics tools enabling AI assistants and MCP clients to perform sophisticated protein research, comparative genomics, structural biology analysis, and systems biology investigations directly through UniProt's REST API.
