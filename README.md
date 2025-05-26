@@ -1,4 +1,4 @@
-![UniProt MCP Server Logo](uniprot-mcp-server.png)
+![UniProt MCP Server Logo](uniprot-mcp-server-logo.png)
 
 # UniProt MCP Server
 
