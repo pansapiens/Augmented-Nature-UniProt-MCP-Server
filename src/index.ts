@@ -815,7 +815,7 @@ class UniProtServer {
               content: [
                 {
                   type: 'text',
-                  text: args.format === 'json'
+                  text: typeof response.data === 'object'
                     ? JSON.stringify(response.data, null, 2)
                     : String(response.data),
                 },
