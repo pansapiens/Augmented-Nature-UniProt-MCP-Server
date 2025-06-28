@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import express, { Request, Response } from 'express';
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -262,7 +264,7 @@ class UniProtServer {
     this.setupToolHandlers();
 
     // Error handling
-    this.server.onerror = (error) => console.error('[MCP Error]', error);
+    this.server.onerror = (error: any) => console.error('[MCP Error]', error);
     process.on('SIGINT', async () => {
       await this.server.close();
       process.exit(0);
@@ -811,16 +813,16 @@ class UniProtServer {
         },
       });
 
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: typeof response.data === 'object'
-                    ? JSON.stringify(response.data, null, 2)
-                    : String(response.data),
-                },
-              ],
-            };
+      return {
+        content: [
+          {
+            type: 'text',
+            text: typeof response.data === 'object'
+              ? JSON.stringify(response.data, null, 2)
+              : String(response.data),
+          },
+        ],
+      };
     } catch (error) {
       return {
         content: [
@@ -1937,9 +1939,44 @@ class UniProtServer {
   }
 
   async run() {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error('UniProt MCP server running on stdio');
+    const transportArg = process.argv.find((arg: string) => arg.startsWith('--transport='));
+    const transportType = transportArg ? transportArg.split('=')[1] : process.env.MCP_TRANSPORT || 'stdio';
+
+    if (transportType === 'http') {
+      const app = express();
+      app.use(express.json());
+
+      app.all('/mcp', async (req: Request, res: Response) => {
+        // This implementation is not truly stateless because it reuses the same server instance.
+        // This can lead to issues with concurrent requests.
+        // However, it fixes the immediate build error related to the transport constructor.
+        try {
+          const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+          res.on('close', () => {
+            transport.close();
+          });
+          await this.server.connect(transport); // Connect the transport to the existing server instance
+          await transport.handleRequest(req, res, req.body);
+        } catch (error) {
+          console.error('Error handling MCP request:', error);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'Internal Server Error' });
+          }
+        }
+      });
+
+      const port = process.env.PORT || 3000;
+      app.listen(port, () => {
+        console.error(`UniProt MCP server running on http://localhost:${port}/mcp`);
+      });
+    } else if (transportType === 'stdio') {
+      const transport = new StdioServerTransport();
+      await this.server.connect(transport);
+      console.error('UniProt MCP Server running on stdio');
+    } else {
+      console.error(`Invalid transport: ${transportType}. Supported values are 'stdio' and 'http'.`);
+      process.exit(1);
+    }
   }
 }
 

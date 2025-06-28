@@ -42,7 +42,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 ENV NODE_ENV=production
 
 # Entry point
-ENTRYPOINT ["node", "build/index.js"]
+ENTRYPOINT ["node", "build/index.js", "--transport=http"]
 
 # Labels for metadata
 LABEL maintainer="UniProt MCP Server Team"

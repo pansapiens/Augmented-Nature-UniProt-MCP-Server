@@ -1,4 +1,3 @@
-
 # Unofficial UniProt MCP Server
 
 A comprehensive Model Context Protocol (MCP) server providing advanced access to the UniProt protein database. This server offers 26 specialized bioinformatics tools enabling AI assistants and MCP clients to perform sophisticated protein research, comparative genomics, structural biology analysis, and systems biology investigations directly through UniProt's REST API.
@@ -60,97 +59,94 @@ A comprehensive Model Context Protocol (MCP) server providing advanced access to
 
 ## Installation
 
-### Prerequisites
+There are two ways to install the server: from source or using Docker.
 
-- Node.js (v16 or higher)
-- npm or yarn
+### From Source
 
-### Setup
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/augmented-nature/uniprot-mcp-server.git
+    cd uniprot-mcp-server
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Build the project:
+    ```bash
+    npm run build
+    ```
 
-1. Clone the repository:
+### With Docker
 
-```bash
-git clone <repository-url>
-cd uniprot-server
-```
-
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Build the project:
-
-```bash
-npm run build
-```
-
-## Docker
-
-### Building the Docker Image
-
-Build the Docker image:
-
+Build the Docker image from the project root:
 ```bash
 docker build -t uniprot-mcp-server .
 ```
 
-### Running with Docker
+## Usage
 
-Run the container:
+### Configuration
 
-```bash
-docker run -i uniprot-mcp-server
-```
+The server's transport mechanism can be configured via an environment variable or a command-line flag. The command-line flag takes precedence.
 
-For MCP client integration, you can use the container directly:
+-   **Transport**:
+    -   `MCP_TRANSPORT` environment variable (`http` or `stdio`). Defaults to `stdio`.
+    -   `--transport=<stdio|http>` command-line flag.
+-   **Port** (for `http` transport):
+    -   `PORT` environment variable. Defaults to `3000`.
 
-```json
-{
-  "mcpServers": {
-    "uniprot": {
-      "command": "docker",
-      "args": ["run", "-i", "uniprot-mcp-server"],
-      "env": {}
-    }
-  }
-}
-```
+### Running the Server
 
-### Docker Compose (Optional)
+#### From Source
 
-Create a `docker-compose.yml` for easier management:
+-   **Stdio transport (default)**:
+    ```bash
+    npm start
+    ```
+-   **HTTP transport**:
+    ```bash
+    npm start -- --transport=http
+    ```
+    You can specify a different port. For example, to use port 8173: `PORT=8173 npm start -- --transport=http`.
+
+#### With Docker
+
+By default, the Docker container runs with the `http` transport.
+
+-   **HTTP transport** (overriding the default port to 8173):
+    ```bash
+    docker run -p 8173:8173 -e MCP_TRANSPORT=http -e PORT=8173 uniprot-mcp-server
+    ```
+-   **Stdio transport**:
+    ```bash
+    docker run -i uniprot-mcp-server --transport=stdio
+    ```
+    The `-i` flag is required to keep stdin open for communication.
+
+#### With Docker Compose
+
+The `docker-compose.yml` is configured to run the server with the `http` transport, overriding the default port to 8173.
 
 ```yaml
-version: "3.8"
 services:
   uniprot-mcp:
     build: .
     image: uniprot-mcp-server
-    stdin_open: true
-    tty: true
+    ports:
+      - "${PORT:-8173}:8173" # Exposes port 8173 on the host
+    environment:
+      - MCP_TRANSPORT=http
+      - PORT=8173 # Overrides the default port inside the container
 ```
 
-Run with:
+Run with `docker-compose up`.
 
-```bash
-docker-compose up
-```
+### Client Integration Examples
 
-## Usage
+#### Stdio (from source)
 
-### As an MCP Server
-
-The server is designed to run as an MCP server that communicates via stdio:
-
-```bash
-npm start
-```
-
-### Adding to MCP Client Configuration
-
-Add the server to your MCP client configuration (e.g., Claude Desktop):
+Add this to your MCP client configuration (e.g., Claude Desktop):
 
 ```json
 {
@@ -163,6 +159,24 @@ Add the server to your MCP client configuration (e.g., Claude Desktop):
   }
 }
 ```
+
+#### Stdio (with Docker)
+
+```json
+{
+  "mcpServers": {
+    "uniprot": {
+      "command": "docker",
+      "args": ["run", "-i", "uniprot-mcp-server", "--transport=stdio"],
+      "env": {}
+    }
+  }
+}
+```
+
+#### HTTP
+
+When running the server with the `http` transport (e.g., via Docker), it will be available at `http://localhost:8173/mcp`. You can use a tool like `mcp-remote` or configure your client to connect to this URL.
 
 ## Available Tools
 
